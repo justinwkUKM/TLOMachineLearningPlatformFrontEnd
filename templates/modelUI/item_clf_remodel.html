@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>DataTeam</title>
+  </head>
+  <body>
+    {% import 'tloML/base.html' as base %}
+    {{ base.topnavbar(product_item) }}
+    {% if added_model_flag %}
+    <div class="alert alert-success" role="alert">
+      Model Added Successfully
+    </div>
+    {% endif %}
+    <div class="container">
+      <div class="row align-items-center justify-content-center">
+        <div class="col-9">
+          <div class="card-group">
+            <div class="card">
+              <h5 class="card-header">Create New Model</h5>
+              <div class="card-body">
+                <form action="{{  url_for('tloapp.remodel')  }}" method="POST" enctype = "multipart/form-data">
+                  <div class="form-group">
+                    <label for="excelfile">Input CSV file to retrain model</label>
+                    <input type="file" class="form-control-file" name="excelfile">
+                  </div>
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-body">
+                <h5 class="card-title">Model Stored Listing</h5>
+                <table class="table table-hover table-bordered">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Model Name</th>
+                      <th scope="col">Created Datetime</th>
+                      <th scope="col">Accuracy</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for each in models.model_list %}
+                    <tr>
+                      <th scope="row">{{ loop.index }}</th>
+                      <td>{{ each.filename }}</td>
+                      <td>{{ each.created_date }}</td>
+                      <td>{{  each.data.accuracy }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row align-items-center justify-content-center">
+        <div class="col-9">
+          <div class="card border-dark mb-3" >
+            <div class="card-body text-dark">
+              <h5 class="card-title">Model Performances</h5>
+              <div class="form-group col-md-4">
+                <label for="inputState">Select Model</label>
+                <select id="inputState" class="form-control">
+                  <option selected>Choose...</option>
+                  {% for each in models.model_list %}
+                  <option>{{ each.filename }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+  </body>
+</html>

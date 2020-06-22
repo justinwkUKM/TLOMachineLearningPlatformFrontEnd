@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <title>DataTeam </title>
+  </head>
+  <body>
+    {% import 'tloML/base.html' as base %}
+    {{ base.topnavbar(product_item) }}
+    <div class="container">
+      <div class="row align-items-center justify-content-center">
+        <div class="col-6">
+          <div class="card">
+            <h5 class="card-header">Item Classification</h5>
+            <div class="card-body">
+              <form action="{{ url_for('tloapp.loadmodelpage', product_id=product_id, model_id=model_id) }}" method ="POST" enctype = "multipart/form-data">
+                <div class="form-group">
+                  {% if item_name %}
+                  <label for="item_name">{{ item_name }}</label>
+                  <label for="item_name">{{ item_category }}</label>
+                  {% else %}
+                  <label for="item_name">Item Name</label>
+                  <input type="text" class="form-control" name="item_name" >
+                  <p class="font-weight-normal">---- or -----</p>
+                  <div class="custom-file">
+                    <input type="file" class="custom-file-input" name="csvFile">
+                    <label class="custom-file-label" for="csvFile">Upload CSV file, formatted with "item_name" header</label>
+                  </div>
+                  {% endif %}
+                </div>
+                {% if item_category %}
+              <button type="button" class="btn btn-primary" onclick="window.location='/'">Reset</button>
+                {% else %}
+                  <button type="submit" class="btn btn-primary">Submit</button>
+                {% endif %}
+                <a href="/retrainModel">Retrain Model</a>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Optional JavaScript -->
+    <script>
+      // Add the following code if you want the name of the file appear on select
+      $(".custom-file-input").on("change", function() {
+        var fileName = $(this).val().split("\\").pop();
+        $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+      });
+     </script>
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+  </body>
+</html>

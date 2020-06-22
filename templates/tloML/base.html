@@ -1,0 +1,63 @@
+{% macro topnavbar(product_model_list) -%}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+        data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false"
+        aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="/">
+        <img src="https://thelorry.com/images/logos/thelorry-logo-white.png" width="30" height="30"
+            class="d-inline-block align-top" alt="">
+        TheLorry DataBoard
+    </a>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="http://example.com" id="navbarDropdownMenuLink"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Products
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    {% for each in product_model_list %}
+                    <li class="dropdown-submenu"><a class="dropdown-item dropdown-toggle" data-toggle="dropdown"
+                            href="{{ url_for('tloapp.manageproductpage', product_id=each.product_id) }}">{{ each.product_name }}</a>
+                        <ul class="dropdown-menu">
+                            {% for inner_each in each['model_list'] %}
+                            <a class="dropdown-item"
+                                href="{{ url_for('tloapp.loadmodelpage', model_id=inner_each['id'], product_id=each.product_id) }}">{{ inner_each.model_name }}</a>
+                            {% endfor %}
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item"
+                                href="{{ url_for('tloapp.managemodelpage', model_id='new', product_id=each.product_id) }}">Adding New Model</a>
+                        </ul>
+                    </li>
+                    {% endfor %}
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{{ url_for('tloapp.manageproductpage', product_id='new') }}">Adding
+                        New Product</a>
+                </ul>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">API</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+{%- endmacro %}
+
+{% macro breadcrumb(root, root_action, subroot=None, subroot_action=None) -%}
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item">{{ root }}</li>
+        <li class="breadcrumb-item">{{ root_action }}</li>
+        {% if subroot %}
+        <li class="breadcrumb-item">{{ subroot }}</li>
+        <li class="breadcrumb-item active" aria-current="page">{{ subroot_action }}</li>
+        {% endif %}
+    </ol>
+</nav>
+{%- endmacro %}
