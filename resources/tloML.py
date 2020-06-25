@@ -24,44 +24,60 @@ def loadhomepage():
 
 @tloapp.route('/product/<product_id>/model/<model_id>', methods=['GET','POST'])
 def loadmodelpage(product_id, model_id):
-    if request.method == 'POST':
-        item_name = request.form['item_name']
-        item_list = [item_name]
-        if item_name:
-            payload = json.dumps({
-            "item_list" : item_list
-            })
-            # print(payload)
-            response = requests.post(f"{os.environ.get('API_ENDPOINT')}/api/model/{model_id}/classify", headers={"Content-Type": "application/json"}, data=payload)
-            # print(response.status_code)
-            # print(response.text)
-            # print(response.headers)
-            item = response.json()['item_list']
-            # print(item[0]['item_name'])
-            return render_template('modelUI/item_clf_run.html', model_id=model_id, item_name = item[0]['item_name'], item_category = item[0]['classified_category'])
+    response = requests.get(f"{os.environ.get('API_ENDPOINT')}/api/models/{product_id}")
+    models_info = json.loads(response.text)
+    found_flag = False
+    for each in models_info['payload']:
+        if each['id'] == model_id:
+            found_flag = True
+            model_category = each['model_type']
+
+    if found_flag is False:
+        return "model not found"
+    
+    if model_category == "Text_Classification":
+        if request.method == 'POST':
+            item_name = request.form['item_name']
+            item_list = [item_name]
+            if item_name:
+                payload = json.dumps({
+                "item_list" : item_list
+                })
+                # print(payload)
+                response = requests.post(f"{os.environ.get('API_ENDPOINT')}/api/model/{model_id}/classify", headers={"Content-Type": "application/json"}, data=payload)
+                # print(response.status_code)
+                # print(response.text)
+                # print(response.headers)
+                item = response.json()['item_list']
+                # print(item[0]['item_name'])
+                return render_template('modelUI/item_clf_run.html', model_id=model_id, item_name = item[0]['item_name'], item_category = item[0]['classified_category'])
+            else:
+                f = request.files['csvFile']
+                f.save('itemlist2classify.csv')
+                itemdf = pd.read_csv(r'./itemlist2classify.csv')
+                item_list = itemdf['item_name'].tolist()
+                payload = json.dumps({
+                "item_list" : item_list
+                })
+                response = requests.post(f"{os.environ.get('API_ENDPOINT')}/api/model/{model_id}/classify", headers={"Content-Type": "application/json"}, data=payload)
+                item = response.json()['item_list']
+                categorized_item_list = []
+                for each in item:
+                    row = []
+                    item_name = each['item_name']
+                    item_category = each['classified_category']
+                    row = [item_name,item_category]
+                    categorized_item_list.append(row)
+                categorized_item_df = pd.DataFrame(data=categorized_item_list,columns=["item_name","categorized_item"])
+                categorized_item_df.to_csv('./itemlistclassified.csv')
+                # return url_for('tloapp.displayreportpage', product_id=product_id, model_id=model_id)
+                return render_template('modelUI/classify_report.html', data=categorized_item_list[:50], product_id=product_id, model_id=model_id)
         else:
-            f = request.files['csvFile']
-            f.save('itemlist2classify.csv')
-            itemdf = pd.read_csv(r'./itemlist2classify.csv')
-            item_list = itemdf['item_name'].tolist()
-            payload = json.dumps({
-            "item_list" : item_list
-            })
-            response = requests.post(f"{os.environ.get('API_ENDPOINT')}/api/model/{model_id}/classify", headers={"Content-Type": "application/json"}, data=payload)
-            item = response.json()['item_list']
-            categorized_item_list = []
-            for each in item:
-                row = []
-                item_name = each['item_name']
-                item_category = each['classified_category']
-                row = [item_name,item_category]
-                categorized_item_list.append(row)
-            categorized_item_df = pd.DataFrame(data=categorized_item_list,columns=["item_name","categorized_item"])
-            categorized_item_df.to_csv('./itemlistclassified.csv')
-            # return url_for('tloapp.displayreportpage', product_id=product_id, model_id=model_id)
-            return render_template('modelUI/classify_report.html', data=categorized_item_list[:50], product_id=product_id, model_id=model_id)
+            return render_template('modelUI/item_clf_run.html', product_id=product_id, model_id=model_id)
+    elif model_category=="Time_Forcasting": 
+        return "time forcast page here"
     else:
-        return render_template('modelUI/item_clf_run.html', product_id=product_id, model_id=model_id)
+        return "model type unsupported"
 
 @tloapp.route('/product/<product_id>/model/<model_id>/report', methods=['GET','POST'])
 def displayreportpage(product_id,model_id):
