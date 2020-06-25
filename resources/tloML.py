@@ -75,7 +75,7 @@ def loadmodelpage(product_id, model_id):
         else:
             return render_template('modelUI/item_clf_run.html', product_id=product_id, model_id=model_id)
     elif model_category=="Time_Forcasting": 
-        return "time forcast page here"
+        return render_template('modelUI/time_forcast.html', data="", product_id=product_id, model_id=model_id)
     else:
         return "model type unsupported"
 
