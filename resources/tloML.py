@@ -3,7 +3,7 @@ import requests
 import os
 import json
 import pandas as pd
-
+from datetime import datetime
 tloapp = Blueprint('tloapp',__name__)
 
 @tloapp.route('/', methods=['GET'])
@@ -75,7 +75,14 @@ def loadmodelpage(product_id, model_id):
         else:
             return render_template('modelUI/item_clf_run.html', product_id=product_id, model_id=model_id)
     elif model_category=="Time_Forcasting": 
-        return render_template('modelUI/time_forcast.html', data="", product_id=product_id, model_id=model_id)
+        response = requests.post(f"{os.environ.get('API_ENDPOINT')}/api/model/{model_id}/predict")
+        predictions = json.loads(response.text)
+        labels = []
+        data = []
+        for each in predictions['forcast']:
+            labels.append(each['date'])
+            data.append(each['prediction'])
+        return render_template('modelUI/time_forcast.html', data=data, error_metrics=predictions['RMSE'], last_update=predictions['forcast_datetime'], labels=labels, product_id=product_id, model_id=model_id)
     else:
         return "model type unsupported"
 
