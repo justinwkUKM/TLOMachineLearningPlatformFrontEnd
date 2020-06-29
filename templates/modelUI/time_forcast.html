@@ -38,8 +38,14 @@
                                         {% for each in data %}
                                         <tr>
                                             <th scope="row">{{ loop.index }}</th>
+                                            {% if loop.index == 1%}
+                                            <td><b>{{ labels[loop.index - 1] }}</b></td>
+                                            <td><b>{{ each }}</b></td>
+                                            {% else %}
                                             <td>{{ labels[loop.index - 1] }}</td>
                                             <td>{{ each }}</td>
+                                            {% endif %}
+                                            
                                         </tr>
                                         {% endfor %}
                                     </tbody>
