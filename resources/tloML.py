@@ -1,4 +1,4 @@
-from flask import request, render_template, Blueprint, send_file, url_for
+from flask import request, render_template, Blueprint, send_file, url_for, redirect
 import requests
 import os
 import json
@@ -31,7 +31,9 @@ def loadhomepage():
     return render_template('tloML/home.html', product_model_list=product_model_list)
 
 @tloapp.route('/product/<product_id>/model/<model_id>', methods=['GET','POST'])
+@cache.cached()
 def loadmodelpage(product_id, model_id):
+    print("Cache Not Exist")
     response = requests.get(f"{os.environ.get('API_ENDPOINT')}/api/models/{product_id}")
     models_info = json.loads(response.text)
     found_flag = False
@@ -93,6 +95,12 @@ def loadmodelpage(product_id, model_id):
         return render_template('modelUI/time_forcast.html', data=data, error_metrics=predictions['RMSE'], last_update=predictions['forcast_datetime'], labels=labels, product_id=product_id, model_id=model_id)
     else:
         return "model type unsupported"
+
+@tloapp.route('/product/<product_id>/model/<model_id>&force_update=True', methods=['GET','POST'])
+def force_update(product_id, model_id):
+    print("FORCE UPDATED")
+    cache.delete(f"view/{str(url_for('tloapp.loadmodelpage', product_id = product_id, model_id = model_id))}")
+    return redirect(url_for('tloapp.loadmodelpage', product_id = product_id, model_id = model_id))
 
 @tloapp.route('/product/<product_id>/model/<model_id>/report', methods=['GET','POST'])
 def displayreportpage(product_id,model_id):
@@ -181,3 +189,4 @@ def managemodelpage(product_id,model_id):
         return render_template('tloML/model.html', model_id=model_id, model_name=match_model_name, model_desc=match_model_desc)
         # response = requests.post(f"{os.environ.get('API_ENDPOINT')}/api/product/{model_id}", headers={"Content-Type": "application/json"})
     return render_template('tloML/model.html', model_id=model_id)
+
