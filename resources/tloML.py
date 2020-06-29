@@ -4,22 +4,30 @@ import os
 import json
 import pandas as pd
 from datetime import datetime
+from cache import cache
+
 tloapp = Blueprint('tloapp',__name__)
 
 @tloapp.route('/', methods=['GET'])
 def loadhomepage():
-    response = requests.get(f'{os.environ.get("API_ENDPOINT")}/api/products')
-    payload = response.json()
-    product_item = payload['payload']
-    product_model_list = []
-    for each in product_item:
-        items = {}
-        items['product_name'] = each['name']
-        items['product_id'] = each['id']
-        response = requests.get(f'{os.environ.get("API_ENDPOINT")}/api/models/{items["product_id"]}')
-        items['model_list'] = response.json()['payload']
-        product_model_list.append(items)
-    # print(product_model_list)
+    product_model_list = cache.get("menu_list")
+    if product_model_list is None:
+        print("CACHE NOT EXIST")
+        response = requests.get(f'{os.environ.get("API_ENDPOINT")}/api/products')
+        payload = response.json()
+        product_item = payload['payload']
+        product_model_list = []
+        for each in product_item:
+            items = {}
+            items['product_name'] = each['name']
+            items['product_id'] = each['id']
+            response = requests.get(f'{os.environ.get("API_ENDPOINT")}/api/models/{items["product_id"]}')
+            items['model_list'] = response.json()['payload']
+            product_model_list.append(items)
+        cache.set("menu_list",product_model_list)
+    else :
+        print("CACHE USED")
+        # product_model_list = cache.get("menu_list")
     return render_template('tloML/home.html', product_model_list=product_model_list)
 
 @tloapp.route('/product/<product_id>/model/<model_id>', methods=['GET','POST'])
