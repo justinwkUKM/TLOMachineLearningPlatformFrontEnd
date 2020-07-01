@@ -41,10 +41,12 @@ def loadmodelpage(product_id, model_id):
         if each['id'] == model_id:
             found_flag = True
             model_category = each['model_type']
+            model_name = each['model_name']
+            model_desc = each['desc']
 
     if found_flag is False:
         return "model not found"
-    
+
     if model_category == "Text_Classification":
         if request.method == 'POST':
             item_name = request.form['item_name']
@@ -92,7 +94,7 @@ def loadmodelpage(product_id, model_id):
         for each in predictions['forcast']:
             labels.append(each['date'])
             data.append(each['prediction'])
-        return render_template('modelUI/time_forcast.html', data=data, error_metrics=predictions['RMSE'], last_update=predictions['forcast_datetime'], labels=labels, product_id=product_id, model_id=model_id)
+        return render_template('modelUI/time_forcast.html', data=data, error_metrics=predictions['RMSE'], last_update=predictions['forcast_datetime'], labels=labels, product_id=product_id, model_id=model_id, model_name=model_name, model_desc=model_desc)
     else:
         return "model type unsupported"
 
