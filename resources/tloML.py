@@ -87,21 +87,37 @@ def loadmodelpage(product_id, model_id):
         else:
             return render_template('modelUI/item_clf_run.html', product_id=product_id, model_id=model_id)
     elif model_category=="Time_Forcasting": 
-        response = requests.post(f"{os.environ.get('API_ENDPOINT')}/api/model/{model_id}/predict")
-        predictions = json.loads(response.text)
-        labels = []
-        data = []
-        for each in predictions['forcast']:
-            labels.append(each['date'])
-            data.append(each['prediction'])
-        return render_template('modelUI/time_forcast.html', data=data, error_metrics=predictions['RMSE'], last_update=predictions['forcast_datetime'], labels=labels, product_id=product_id, model_id=model_id, model_name=model_name, model_desc=model_desc)
+        forcast_data = cache.get("forcast_data")
+        if forcast_data is None:
+            print("forecast CACHE NOT EXIST")
+            response = requests.post(f"{os.environ.get('API_ENDPOINT')}/api/model/{model_id}/predict")
+            predictions = json.loads(response.text)
+            labels = []
+            data = []
+            for each in predictions['forcast']:
+                labels.append(each['date'])
+                data.append(each['prediction'])
+            forcast_data = {
+                "data" : data,
+                "error_metrics" : predictions["RMSE"],
+                "last_update" : predictions['forcast_datetime'],
+                "labels" : labels,
+                "model_name" : model_name,
+                "model_desc" : model_desc
+            }
+            cache.set("forcast_data", forcast_data)
+            return render_template('modelUI/time_forcast.html', data=data, error_metrics=predictions['RMSE'], last_update=predictions['forcast_datetime'], labels=labels, product_id=product_id, model_id=model_id, model_name=model_name, model_desc=model_desc, cache_key="forcast_data")
+        else:
+            print("Forcast Cache USED!")
+            return render_template('modelUI/time_forcast.html', data=forcast_data["data"], error_metrics=forcast_data['error_metrics'], last_update=forcast_data['last_update'], labels=forcast_data['labels'], product_id=product_id, model_id=model_id, model_name=forcast_data['model_name'], model_desc=forcast_data['model_desc'], cache_key="forcast_data")
     else:
         return "model type unsupported"
 
-@tloapp.route('/product/<product_id>/model/<model_id>&force_update=True', methods=['GET','POST'])
-def force_update(product_id, model_id):
+@tloapp.route('/product/<product_id>/model/<model_id>&force_update=True?cache_key=<cache_key>', methods=['GET','POST'])
+def force_update(product_id, model_id, cache_key):
+    cache.delete(cache_key)
     print("FORCE UPDATED")
-    cache.delete(f"view/{str(url_for('tloapp.loadmodelpage', product_id = product_id, model_id = model_id))}")
+    # cache.delete(f"view/{str(url_for('tloapp.loadmodelpage', product_id = product_id, model_id = model_id))}")
     return redirect(url_for('tloapp.loadmodelpage', product_id = product_id, model_id = model_id))
 
 @tloapp.route('/product/<product_id>/model/<model_id>/report', methods=['GET','POST'])
